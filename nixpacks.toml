@@ -1,0 +1,8 @@
+[phases.setup]
+nixpkgs = ["postgresql", "pkg-config"]
+
+[phases.build]
+cmds = ["composer install --no-dev"]
+
+[[phases.build.cmds]]
+cmd = "echo 'extension=pdo_pgsql.so' >> /etc/php.ini"

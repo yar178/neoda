@@ -1,0 +1,76 @@
+        :root { --primary: #00a8ff; --dark: #0c3e83; --danger: #e84118; --success: #4cd137; --bg: #f5f6fa; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; display: flex; flex-direction: column; align-items: center; padding-bottom: 100px; }
+        
+        .header { width: 100%; background: var(--dark); color: rgb(243, 240, 240); padding: 15px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .header h2 { display: inline-flex; align-items: center; gap: 10px; margin: 0; }
+        .header img.logo { height: 50px; width: auto; border-radius: 50%; display: inline-block; filter: brightness(0) invert(1);  }
+        
+        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; width: 90%; max-width: 1000px; margin-top: 20px; margin-bottom: 20px; }
+        
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); text-align: center; transition: 0.3s; }
+        .card:hover { transform: translateY(-5px); }
+        .card i { font-size: 2.5rem; color: var(--primary); margin-bottom: 10px; }
+        .card h3 { margin: 5px 0; color: #555; font-size: 0.9rem; }
+        .card .value { font-size: 1.8rem; font-weight: bold; color: var(--dark); }
+
+        /* Tank Visualization */
+        .tank-wrapper { display: flex; flex-direction: column; align-items: center; grid-row: span 2; }
+        .tank { width: 120px; height: 180px; border: 4px solid var(--dark); border-radius: 10px; position: relative; overflow: hidden; background: #eee; }
+        .water { position: absolute; bottom: 0; width: 100%; background: linear-gradient(to top, #00a8ff, #00d2ff); transition: height 1s ease-in-out; }
+
+        /* Control Buttons */
+        .controls { grid-column: 1 / -1; display: flex; justify-content: space-around; background: white; padding: 20px; border-radius: 15px; }
+        .btn { padding: 12px 25px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; display: flex; align-items: center; gap: 8px; }
+        .btn-pump { background: var(--primary); }
+        .btn-purifier { background: var(--success); }
+        .off { background: #7f8c8d !important; }
+
+        /* Pump control styles */
+        .pump-control { display:flex; align-items:center; gap:12px; }
+        .pump-control #pumpState { font-size:0.95rem; color: #222; }
+        .pump-control .btn { padding:10px 14px; font-size:0.9rem; }
+
+        .warning { color: var(--danger) !important; }
+        /* Taskbar */
+        .taskbar { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(255,255,255,0.97); padding: 8px 12px; border-radius: 30px; box-shadow: 0 6px 18px rgba(0,0,0,0.08); display: flex; gap: 8px; z-index: 1000; }
+        .task-item { display: flex; flex-direction: column; align-items: center; font-size: 0.75rem; color: var(--dark); background: transparent; border: none; cursor: pointer; padding: 8px 10px; border-radius: 8px; }
+        .task-item i { font-size: 1.1rem; color: var(--primary); }
+        .task-item span { margin-top: 4px; font-size: 0.65rem; color: #333; }
+        .task-item:hover { background: #f0f0f0; }
+
+        /* Modal */
+        .modal { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.5); z-index: 1100; }
+        .modal .modal-content { background: white; padding: 18px; border-radius: 10px; width: 92%; max-width: 520px; max-height: 86vh; overflow: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.12); }
+        .modal .close { float: right; cursor: pointer; color: var(--dark); font-weight: bold; }
+        /* Loading overlay */
+        #loaderOverlay { position: fixed; inset: 0; background: linear-gradient(135deg,#00a8ff,#00d2ff); display:flex; align-items:center; justify-content:center; z-index:1200; transition: opacity 400ms ease, visibility 400ms ease; }
+        #loaderOverlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+        .loader-box { text-align:center; color: white; }
+        .spinner { width:72px; height:72px; border-radius:50%; border:8px solid rgba(255,255,255,0.25); border-top-color: rgba(255,255,255,0.95); animation: spin 1s linear infinite; margin: 0 auto 10px; }
+        .loader-text { font-size:1.1rem; font-weight:600; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        /* Toast notifications */
+        .toast-container { position: fixed; right: 18px; top: 18px; display:flex; flex-direction:column; gap:10px; z-index:1600; }
+        .toast { min-width: 260px; max-width: 360px; background: #fff; color: #222; padding: 12px 14px; border-radius: 8px; box-shadow: 0 8px 20px rgba(0,0,0,0.12); display:flex; gap:10px; align-items:center; }
+        .toast .dot { width:10px; height:10px; border-radius:50%; flex:0 0 10px; }
+        .toast.info { border-left: 4px solid var(--primary); }
+        .toast.warn { border-left: 4px solid #f39c12; }
+        .toast.danger { border-left: 4px solid var(--danger); }
+        .toast .msg { font-size:0.95rem; }
+
+        /* Turbidity Level Indicator */
+        .turbidity-level-indicator { width: 100%; margin-top: 10px; }
+        .level-bar { width: 100%; height: 8px; background: #ecf0f1; border-radius: 4px; overflow: hidden; position: relative; }
+        .level-fill { height: 100%; transition: width 0.5s ease, background-color 0.5s ease; border-radius: 4px; }
+        .level-labels { display: flex; justify-content: space-between; margin-top: 6px; font-size: 0.75rem; color: #666; }
+        .level-labels span { flex: 1; text-align: center; }
+        .level-labels .label-jernih { color: #2ecc71; font-weight: bold; }
+        .level-labels .label-netral { color: #f1c40f; font-weight: bold; }
+        .level-labels .label-keruh { color: #e67e22; font-weight: bold; }
+        .level-labels .label-sangat-keruh { color: #e74c3c; font-weight: bold; }
+        
+        /* Level indicator container classes for additional styling */
+        .turbidity-level-indicator.level-jernih .level-labels .label-jernih { color: #27ae60; text-decoration: underline; }
+        .turbidity-level-indicator.level-netral .level-labels .label-netral { color: #d68910; text-decoration: underline; }
+        .turbidity-level-indicator.level-keruh .level-labels .label-keruh { color: #c0392b; text-decoration: underline; }
+        .turbidity-level-indicator.level-sangat-keruh .level-labels .label-sangat-keruh { color: #a93226; text-decoration: underline; }

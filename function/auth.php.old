@@ -1,0 +1,189 @@
+<?php
+header('Content-Type: application/json; charset=utf-8');
+
+$action = $_POST['action'] ?? '';
+$usersFile = __DIR__ . '/../data/users.json';
+
+// Ensure data directory exists
+if (!is_dir(__DIR__ . '/../data')) {
+    mkdir(__DIR__ . '/../data', 0755, true);
+}
+
+function readUsers() {
+    global $usersFile;
+    if (!file_exists($usersFile)) {
+        return [];
+    }
+    $data = file_get_contents($usersFile);
+    if (!$data) return [];
+    return json_decode($data, true) ?? [];
+}
+
+function saveUsers($users) {
+    global $usersFile;
+    file_put_contents($usersFile, json_encode($users, JSON_PRETTY_PRINT));
+}
+
+function generateToken() {
+    return bin2hex(random_bytes(32));
+}
+
+// Register
+if ($action === 'register') {
+    $email = trim($_POST['email'] ?? '');
+    $password = trim($_POST['password'] ?? '');
+    $confirmPassword = trim($_POST['confirmPassword'] ?? '');
+
+    if (!$email || !$password || !$confirmPassword) {
+        http_response_code(400);
+        echo json_encode(['ok' => false, 'message' => 'Email dan password harus diisi']);
+        exit;
+    }
+
+    if ($password !== $confirmPassword) {
+        http_response_code(400);
+        echo json_encode(['ok' => false, 'message' => 'Password tidak cocok']);
+        exit;
+    }
+
+    if (strlen($password) < 6) {
+        http_response_code(400);
+        echo json_encode(['ok' => false, 'message' => 'Password minimal 6 karakter']);
+        exit;
+    }
+
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        http_response_code(400);
+        echo json_encode(['ok' => false, 'message' => 'Email tidak valid']);
+        exit;
+    }
+
+    $users = readUsers();
+    foreach ($users as $user) {
+        if ($user['email'] === $email) {
+            http_response_code(400);
+            echo json_encode(['ok' => false, 'message' => 'Email sudah terdaftar']);
+            exit;
+        }
+    }
+
+    $newUser = [
+        'id' => uniqid('user_'),
+        'email' => $email,
+        'password' => password_hash($password, PASSWORD_BCRYPT),
+        'created_at' => time()
+    ];
+
+    $users[] = $newUser;
+    saveUsers($users);
+
+    http_response_code(201);
+    echo json_encode(['ok' => true, 'message' => 'Pendaftaran berhasil! Silakan login']);
+    exit;
+}
+
+// Login
+if ($action === 'login') {
+    $email = trim($_POST['email'] ?? '');
+    $password = trim($_POST['password'] ?? '');
+
+    if (!$email || !$password) {
+        http_response_code(400);
+        echo json_encode(['ok' => false, 'message' => 'Email dan password harus diisi']);
+        exit;
+    }
+
+    $users = readUsers();
+    $user = null;
+    foreach ($users as $u) {
+        if ($u['email'] === $email) {
+            $user = $u;
+            break;
+        }
+    }
+
+    if (!$user || !password_verify($password, $user['password'])) {
+        http_response_code(401);
+        echo json_encode(['ok' => false, 'message' => 'Email atau password salah']);
+        exit;
+    }
+
+    $token = generateToken();
+    $sessionFile = __DIR__ . '/../data/sessions.json';
+    $sessions = [];
+    if (file_exists($sessionFile)) {
+        $data = file_get_contents($sessionFile);
+        $sessions = json_decode($data, true) ?? [];
+    }
+
+    $sessions[$token] = [
+        'user_id' => $user['id'],
+        'email' => $user['email'],
+        'created_at' => time(),
+        'expires_at' => time() + (30 * 24 * 60 * 60) // 30 days
+    ];
+
+    file_put_contents($sessionFile, json_encode($sessions, JSON_PRETTY_PRINT));
+
+    http_response_code(200);
+    echo json_encode([
+        'ok' => true,
+        'message' => 'Login berhasil',
+        'token' => $token,
+        'email' => $user['email']
+    ]);
+    exit;
+}
+
+// Logout
+if ($action === 'logout') {
+    $token = trim($_POST['token'] ?? '');
+    if (!$token) {
+        http_response_code(400);
+        echo json_encode(['ok' => false, 'message' => 'Token tidak valid']);
+        exit;
+    }
+
+    $sessionFile = __DIR__ . '/../data/sessions.json';
+    if (file_exists($sessionFile)) {
+        $sessions = json_decode(file_get_contents($sessionFile), true) ?? [];
+        unset($sessions[$token]);
+        file_put_contents($sessionFile, json_encode($sessions, JSON_PRETTY_PRINT));
+    }
+
+    echo json_encode(['ok' => true, 'message' => 'Logout berhasil']);
+    exit;
+}
+
+// Verify token
+if ($action === 'verify') {
+    $token = trim($_POST['token'] ?? '');
+    if (!$token) {
+        http_response_code(401);
+        echo json_encode(['ok' => false, 'message' => 'Token tidak valid']);
+        exit;
+    }
+
+    $sessionFile = __DIR__ . '/../data/sessions.json';
+    if (!file_exists($sessionFile)) {
+        http_response_code(401);
+        echo json_encode(['ok' => false, 'message' => 'Session tidak ditemukan']);
+        exit;
+    }
+
+    $sessions = json_decode(file_get_contents($sessionFile), true) ?? [];
+    if (!isset($sessions[$token]) || $sessions[$token]['expires_at'] < time()) {
+        http_response_code(401);
+        echo json_encode(['ok' => false, 'message' => 'Session expired']);
+        exit;
+    }
+
+    echo json_encode([
+        'ok' => true,
+        'email' => $sessions[$token]['email']
+    ]);
+    exit;
+}
+
+http_response_code(400);
+echo json_encode(['ok' => false, 'message' => 'Action tidak valid']);
