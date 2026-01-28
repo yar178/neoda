@@ -146,6 +146,7 @@ $deviceId = $isLoggedIn ? ($_SESSION['device_id'] ?? 'N/A') : '';
         <h3>Level Air</h3>
         <div class="tank">
             <div id="waterLevel" class="water" style="height: 0%;"></div>
+            <div id="overflow"></div>
         </div>
         <div class="value"><span id="levelVal">0</span>%</div>
     </div>
@@ -488,6 +489,19 @@ function updateTurbidityLevel(turbidity) {
             }
 
             const level = Number(data.level ?? 0);
+            if (level <= 100) {
+                document.getElementById('waterLevel').style.height = level + '%';
+                document.getElementById('overflow').style.display = 'none';
+            } else {
+                document.getElementById('waterLevel').style.height = '100%';
+                document.getElementById('overflow').style.display = 'block';
+
+                notifyOnce(
+                    'level',
+                    '⚠️ AIR LUBER! Level: ' + level + '%',
+                    'danger'
+                );
+            }
             const ph = Number(data.ph ?? 7.0);
             const turbidity = Number(data.turbidity ?? 0);
 
@@ -528,6 +542,20 @@ function updateTurbidityLevel(turbidity) {
 
             // Update UI sensor
             document.getElementById('waterLevel').style.height = level + '%';
+            // ==== WARNING AIR LUBER ====
+            if (level > 100) {
+                notifyOnce(
+                    'level',
+                    '⚠️ AIR LUBER! Level air melebihi batas (' + level + '%)',
+                    'danger'
+                );
+
+                // Optional: ubah tampilan biar kelihatan bahaya
+                document.getElementById('waterLevel').style.background = '#e74c3c';
+            } else {
+                document.getElementById('waterLevel').style.background = 'linear-gradient(180deg, #00aaff, #0066cc)';
+            }
+
             document.getElementById('levelVal').innerText = level;
 
             const phElem = document.getElementById('phCard');

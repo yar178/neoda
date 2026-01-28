@@ -74,3 +74,40 @@
         .turbidity-level-indicator.level-netral .level-labels .label-netral { color: #d68910; text-decoration: underline; }
         .turbidity-level-indicator.level-keruh .level-labels .label-keruh { color: #c0392b; text-decoration: underline; }
         .turbidity-level-indicator.level-sangat-keruh .level-labels .label-sangat-keruh { color: #a93226; text-decoration: underline; }
+
+
+        .tank {
+        position: relative;
+        width: 120px;
+        height: 220px;
+        border: 3px solid #333;
+        border-radius: 10px;
+        overflow: hidden;
+        background: #eee;
+        }
+
+        #waterLevel {
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+        height: 0%;
+        background: linear-gradient(180deg, #00aaff, #0066cc);
+        transition: height 0.5s ease;
+        }
+
+        #overflow {
+        position: absolute;
+        top: -15px;
+        left: 0;
+        width: 100%;
+        height: 15px;
+        background: rgba(255, 0, 0, 0.6);
+        display: none;
+        animation: splash 0.6s infinite;
+        }
+
+        @keyframes splash {
+        0% { transform: translateY(0); opacity: 0.5; }
+        50% { transform: translateY(-5px); opacity: 1; }
+        100% { transform: translateY(0); opacity: 0.5; }
+        }
